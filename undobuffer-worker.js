@@ -29,6 +29,7 @@
 * 	// Pop last item
 */
 
+
 /**
 * Main undo buffer
 * Each buffer item is an object of the form:
@@ -40,12 +41,30 @@
 */
 var buffer = [];
 
+
 /**
 * The maxmim size of the circular undo buffer
 * Set to 0 for infinite (not recommended as this will slowly eat all system memory)
 * @var {number}
 */
 var maxBufferSize = 10;
+
+
+/**
+* How often the compression worker should perform its cleanup
+* Set to 0 to disable
+* @var {number}
+*/
+var compressionWorkerInterval = 1000;
+
+
+/**
+* How many items the compression worker should work on per cycle
+* Set to 0 to compress all
+* @var {number}
+*/
+var compressionWorkerPerCycle = 1;
+
 
 self.addEventListener('message', function(e) {
 	switch (e.data.cmd) {
@@ -87,3 +106,27 @@ self.addEventListener('message', function(e) {
 			self.postMessage({id: e.data.id, cmd: 'error', payload: 'Unknown UndoBuffer command: ' + e.data.cmd});
 	}
 }, false);
+
+
+var compressionWorkerHandle;
+if (compressionWorkerInterval) {
+	var compressionWorkerFunc = function() {
+		var candidates = buffer.reverse().filter(function(buf) { return buf.compressed === false });
+		if (compressionWorkerPerCycle > 0) candidates = candidates.slice(0, compressionWorkerPerCycle);
+
+		if (candidates && candidates.length)
+			candidates
+				.forEach(function(buffer) {
+					buffer.compressed = 'compressing';
+					console.log('COMPRESS', buffer);
+					for (var i = 0; i < 1000000000; i++) {
+						// Pass
+					}
+					buffer.compressed = true;
+				});
+
+		compressionWorkerHandle = setTimeout(compressionWorkerFunc, compressionWorkerInterval);
+	};
+
+	compressionWorkerHandle = setTimeout(compressionWorkerFunc, compressionWorkerInterval);
+}
