@@ -1,0 +1,24 @@
+{
+  "name": "angular-undobuffer",
+  "version": "1.0.0",
+  "description": "Web worker powered Undo Buffer for exceptionally large and complex objects",
+  "main": "angular-undobuffer.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hash-bang/angular-undobuffer.git"
+  },
+  "keywords": [
+    "angular",
+    "undo",
+    "buffer",
+    "ui"
+  ],
+  "author": "Matt Carter <m@ttcarter.com> (https://github.com/hash-bang)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hash-bang/angular-undobuffer/issues"
+  },
+  "homepage": "https://github.com/hash-bang/angular-undobuffer#readme"
+}
