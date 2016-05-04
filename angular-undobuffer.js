@@ -10,17 +10,6 @@ angular.module('angular-undobuffer', [])
 		// Boot the worker and setup messaging {{{
 		var worker = new Worker('undobuffer-worker.js');
 		worker.addEventListener('message', function(e) {
-			switch (e.data.cmd) {
-				case 'message':
-					console.log('UndoBuffer:', e.data.payload);
-					break;
-				case 'pop':
-					console.log('Restore undo buffer item', e.data.payload);
-					break;
-				default:
-					throw new Error('Unknown response from UndoBuffer: ' + e.data.cmd);
-			}
-
 			if (e.data.id && messages[e.data.id]) { // Dispatch callback for this message
 				messages[e.data.id](null, e.data);
 				delete messages[e.data.id];
