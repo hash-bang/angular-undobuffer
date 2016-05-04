@@ -234,13 +234,15 @@ app.controller('undoBufferExampleController', function($scope, UndoBuffer) {
 							<thead>
 								<th>Offset</th>
 								<th>Title</th>
-								<th>&nbsp;</th>
+								<th width="20px">Compressed?</th>
+								<th width="20px">&nbsp;</th>
 							</thead>
 							<tbody>
 								<tr ng-repeat="historyItem in history">
-									<td>{{historyItem.$index}}</td>
-									<td><a ng-click="undo($index)">{{historyItem.title}}</a></td>
-									<td>{{$first ? 'Latest' : ''}}</td>
+									<td><a ng-click="undo($index)">{{historyItem.$index}}</a></td>
+									<td><a ng-click="undo($index)">{{historyItem.contents.title}}</a></td>
+									<td class="text-center"><a ng-click="undo($index)"><i class="fa" ng-class="{'fa-check': historyItem.compressed === true, 'fa-times': !historyItem.compressed, 'fa-spinner fa-spin': historyItem.compressed == 'compressing'}"></i></a></td>
+									<td><a ng-click="undo($index)">{{$first ? 'Latest' : ''}}</a></td>
 								</tr>
 							</tbody>
 						</table>

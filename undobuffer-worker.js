@@ -33,6 +33,7 @@
 * Main undo buffer
 * Each buffer item is an object of the form:
 * {
+* 	compressed: Boolean|String, // Either true, false or 'compressing'
 * 	contents: Object, // The actual object itself
 * }
 * @var {array}
@@ -63,7 +64,10 @@ self.addEventListener('message', function(e) {
 			self.postMessage({id: e.data.id, cmd: 'clear'});
 			break;
 		case 'push':
-			buffer.push({contents: e.data.payload});
+			buffer.push({
+				compressed: false,
+				contents: e.data.payload,
+			});
 			if (maxBufferSize && buffer.length > maxBufferSize) buffer.shift(); // Shift off start of buffer if we are limiting the buffer size
 			break;
 		case 'pop':
