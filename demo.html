@@ -26,6 +26,11 @@
 	<!-- Angular -->
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js"></script>
 </head>
+<style>
+.mar-top-md {
+	margin-top: 10px;
+}
+</style>
 
 <script>
 var app = angular.module('app', [
@@ -119,11 +124,21 @@ app.controller('undoBufferExampleController', function($scope, UndoBuffer) {
 		});
 	};
 
+
+	/**
+	* Ping the worker
+	*/
 	$scope.ping = function() {
 		$scope.undoBuffer.pop().then(function() {
 			alert('PONG!');
 		});
 	};
+
+	
+	$scope.maxBufferSize = 10;
+	$scope.$watch('maxBufferSize', function() {
+		$scope.undoBuffer.setMaxBufferSize($scope.maxBufferSize);
+	});
 
 
 	// Initalize main object
@@ -172,6 +187,15 @@ app.controller('undoBufferExampleController', function($scope, UndoBuffer) {
 						</div>
 						<div class="btn-group">
 							<a ng-click="ping()" class="btn btn-info"><i class="fa fa-heartbeat"></i> Ping</a>
+						</div>
+						<div class="form form-horizontal mar-top-md">
+							<div class="form-group">
+								<label class="col-sm-3 control-label">Buffer Size</label>
+								<div class="col-sm-7">
+									<input ng-model="maxBufferSize" type="range" min="0" max="100" class="form-control"/>
+								</div>
+								<div class="col-sm-2 control-label">{{maxBufferSize == 0 ? 'Infinite' : maxBufferSize}}</div>
+							</div>
 						</div>
 					</div>
 				</div>

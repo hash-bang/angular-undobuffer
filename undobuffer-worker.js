@@ -67,6 +67,10 @@ self.addEventListener('message', function(e) {
 		case 'getHistory':
 			self.postMessage({id: e.data.id, cmd: 'getHistory', payload: buffer});
 			break;
+		case 'setMaxBufferSize':
+			maxBufferSize = e.data.payload;
+			self.postMessage({id: e.data.id, cmd: 'setMaxBufferSize', payload: maxBufferSize});
+			break;
 		default:
 			self.postMessage({id: e.data.id, cmd: 'error', payload: 'Unknown UndoBuffer command: ' + e.data.cmd});
 	}
