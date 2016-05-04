@@ -31,6 +31,10 @@
 
 /**
 * Main undo buffer
+* Each buffer item is an object of the form:
+* {
+* 	contents: Object, // The actual object itself
+* }
 * @var {array}
 */
 var buffer = [];
@@ -59,14 +63,16 @@ self.addEventListener('message', function(e) {
 			self.postMessage({id: e.data.id, cmd: 'clear'});
 			break;
 		case 'push':
-			buffer.push(e.data.payload);
+			buffer.push({contents: e.data.payload});
 			if (maxBufferSize && buffer.length > maxBufferSize) buffer.shift(); // Shift off start of buffer if we are limiting the buffer size
 			break;
 		case 'pop':
-			self.postMessage({id: e.data.id, cmd: 'pop', payload: buffer.pop(e.data.payload)});
+			var contents = buffer.pop(e.data.payload);
+			if (contents) contents = contents.contents;
+			self.postMessage({id: e.data.id, cmd: 'pop', payload: contents});
 			break;
 		case 'getHistory':
-			self.postMessage({id: e.data.id, cmd: 'getHistory', payload: buffer});
+			self.postMessage({id: e.data.id, cmd: 'getHistory', payload: buffer.map(function(buffer) { return buffer.contents })});
 			break;
 		case 'setMaxBufferSize':
 			maxBufferSize = e.data.payload;
