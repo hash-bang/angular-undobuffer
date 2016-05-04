@@ -38,6 +38,15 @@ angular.module('angular-undobuffer', [])
 
 
 		/**
+		* Convenience function clear the buffer
+		* @return {Promise}
+		*/
+		this.clear = function(payload) {
+			return this.sendMessage({cmd: 'clear'});
+		};
+
+
+		/**
 		* Convenience function to push a object onto the undoBuffer stack
 		* @param {Object} payload The object to add to the undo buffer
 		* @return {Promise}

@@ -126,6 +126,16 @@ app.controller('undoBufferExampleController', function($scope, UndoBuffer) {
 
 
 	/**
+	* Clear the buffer
+	*/
+	$scope.clear = function() {
+		$scope.undoBuffer.clear().then(function() {
+			$scope.updateHistory();
+		});
+	};
+
+
+	/**
 	* Ping the worker
 	*/
 	$scope.ping = function() {
@@ -137,8 +147,9 @@ app.controller('undoBufferExampleController', function($scope, UndoBuffer) {
 	
 	$scope.maxBufferSize = 10;
 	$scope.$watch('maxBufferSize', function() {
-		$scope.undoBuffer.setMaxBufferSize($scope.maxBufferSize);
-		$scope.updateHistory();
+		$scope.undoBuffer.setMaxBufferSize($scope.maxBufferSize).then(function() {
+			$scope.updateHistory();
+		});
 	});
 
 
@@ -188,6 +199,9 @@ app.controller('undoBufferExampleController', function($scope, UndoBuffer) {
 						</div>
 						<div class="btn-group">
 							<a ng-click="ping()" class="btn btn-info"><i class="fa fa-heartbeat"></i> Ping</a>
+						</div>
+						<div class="btn-group">
+							<a ng-click="clear()" class="btn btn-info"><i class="fa fa-trash"></i> Clear</a>
 						</div>
 						<div class="form form-horizontal mar-top-md">
 							<div class="form-group">

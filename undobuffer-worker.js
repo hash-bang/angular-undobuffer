@@ -56,6 +56,7 @@ self.addEventListener('message', function(e) {
 			break;
 		case 'clear':
 			buffer = [];
+			self.postMessage({id: e.data.id, cmd: 'clear'});
 			break;
 		case 'push':
 			buffer.push(e.data.payload);
