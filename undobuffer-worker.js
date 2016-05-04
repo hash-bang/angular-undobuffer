@@ -29,7 +29,17 @@
 * 	// Pop last item
 */
 
+/**
+* Main undo buffer
+* @var {array}
+*/
 var buffer = [];
+
+/**
+* The maxmim size of the circular undo buffer
+* Set to 0 for infinite (not recommended as this will slowly eat all system memory)
+* @var {number}
+*/
 var maxBufferSize = 10;
 
 self.addEventListener('message', function(e) {
@@ -49,6 +59,7 @@ self.addEventListener('message', function(e) {
 			break;
 		case 'push':
 			buffer.push(e.data.payload);
+			if (maxBufferSize && buffer.length > maxBufferSize) buffer.shift(); // Shift off start of buffer if we are limiting the buffer size
 			break;
 		case 'pop':
 			self.postMessage({id: e.data.id, cmd: 'pop', payload: buffer.pop(e.data.payload)});
