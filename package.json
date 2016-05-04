@@ -3,8 +3,17 @@
   "version": "0.0.0",
   "description": "Web worker powered Undo Buffer for exceptionally large and complex objects",
   "main": "angular-undobuffer.js",
-  "dependencies": {},
-  "devDependencies": {},
+  "dependencies": {
+    "deep-diff": "^0.3.3"
+  },
+  "devDependencies": {
+    "angular": "^1.5.5",
+    "bootstrap": "^3.3.6",
+    "express": "^4.13.4",
+    "font-awesome": "^4.6.1",
+    "jquery": "^2.2.3",
+    "lodash": "^4.11.2"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hash-bang/angular-undobuffer.git"
