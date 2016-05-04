@@ -138,6 +138,7 @@ app.controller('undoBufferExampleController', function($scope, UndoBuffer) {
 	$scope.maxBufferSize = 10;
 	$scope.$watch('maxBufferSize', function() {
 		$scope.undoBuffer.setMaxBufferSize($scope.maxBufferSize);
+		$scope.updateHistory();
 	});
 
 

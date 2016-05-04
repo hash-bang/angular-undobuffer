@@ -69,6 +69,7 @@ self.addEventListener('message', function(e) {
 			break;
 		case 'setMaxBufferSize':
 			maxBufferSize = e.data.payload;
+			if (buffer.length > maxBufferSize) buffer = buffer.slice(buffer.length - maxBufferSize);
 			self.postMessage({id: e.data.id, cmd: 'setMaxBufferSize', payload: maxBufferSize});
 			break;
 		default:
