@@ -76,7 +76,7 @@ self.addEventListener('message', function(e) {
 			self.postMessage({id: e.data.id, cmd: 'pop', payload: contents});
 			break;
 		case 'getHistory':
-			self.postMessage({id: e.data.id, cmd: 'getHistory', payload: buffer.map(function(buffer) { return buffer.contents })});
+			self.postMessage({id: e.data.id, cmd: 'getHistory', payload: buffer});
 			break;
 		case 'setMaxBufferSize':
 			maxBufferSize = e.data.payload;
