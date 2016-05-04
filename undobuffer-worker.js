@@ -53,6 +53,9 @@ self.addEventListener('message', function(e) {
 		case 'pop':
 			self.postMessage({id: e.data.id, cmd: 'pop', payload: buffer.pop(e.data.payload)});
 			break;
+		case 'getHistory':
+			self.postMessage({id: e.data.id, cmd: 'getHistory', payload: buffer});
+			break;
 		default:
 			self.postMessage({id: e.data.id, cmd: 'error', payload: 'Unknown UndoBuffer command: ' + e.data.cmd});
 	}

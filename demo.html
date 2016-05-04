@@ -34,13 +34,41 @@ var app = angular.module('app', [
 
 app.controller('undoBufferExampleController', function($scope, UndoBuffer) {
 	$scope.project = {};
+	$scope.history;
 
 	// Setup undo buffer {{{
 	$scope.undoBuffer = UndoBuffer();
+
+	// Setup a watch to record the old state of the project scope variable whenever it changes
+	$scope.skipNextProjectWatch = false; // Whether to ignore the next change - set to true by $scope.undo() to avoid putting the undone item /back/ into the undo buffer
 	$scope.$watch('project', function(newProject, oldProject) {
 		if (!oldProject) return; // Not yet started
+
+		// Skip one update (if we are in the middle of an undo operation)
+		if ($scope.skipNextProjectWatch) {
+			$scope.skipNextProjectWatch = false;
+			return;
+		}
+
 		$scope.undoBuffer.push(oldProject);
+
+		// Update the history list
+		$scope.updateHistory();
 	});
+
+	/**
+	* Update the history list by paging the service for the buffer contents
+	*/
+	$scope.updateHistory = function() {
+		$scope.undoBuffer.getHistory().then(function(res) {
+			$scope.history = res
+				.map(function(v, k) {
+					v.$index = k;
+					return v;
+				})
+				.reverse();
+		});
+	};
 	// }}}
 
 	$scope.junkTerms = ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'eta', 'theta', 'iota', 'kappa', 'lambda', 'mu', 'nu', 'xi', 'omicron', 'pi', 'sigma', 'tau', 'upsilon', 'phi', 'chi', 'psi', 'omega'];
@@ -84,8 +112,10 @@ app.controller('undoBufferExampleController', function($scope, UndoBuffer) {
 	*/
 	$scope.undo = function() {
 		$scope.undoBuffer.pop().then(function(payload) {
-			console.log('POP!', payload);
+			$scope.skipNextProjectWatch = true;
 			$scope.project = payload;
+			// Update the history list
+			$scope.updateHistory();
 		});
 	};
 
@@ -143,6 +173,26 @@ app.controller('undoBufferExampleController', function($scope, UndoBuffer) {
 						<div class="btn-group">
 							<a ng-click="ping()" class="btn btn-info"><i class="fa fa-heartbeat"></i> Ping</a>
 						</div>
+					</div>
+				</div>
+				<div class="panel panel-primary">
+					<div class="panel-heading">UndoBuffer history</div>
+					<div class="panel-body">
+						<div ng-show="!history.length" class="text-muted">No history to show</div>
+						<table ng-show="history.length" class="table table-striped">
+							<thead>
+								<th>Offset</th>
+								<th>Title</th>
+								<th>&nbsp;</th>
+							</thead>
+							<tbody>
+								<tr ng-repeat="historyItem in history">
+									<td>{{historyItem.$index}}</td>
+									<td><a ng-click="undo($index)">{{historyItem.title}}</a></td>
+									<td>{{$first ? 'Latest' : ''}}</td>
+								</tr>
+							</tbody>
+						</table>
 					</div>
 				</div>
 			</div>

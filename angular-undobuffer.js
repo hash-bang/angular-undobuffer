@@ -63,6 +63,14 @@ angular.module('angular-undobuffer', [])
 			return this.sendMessage({cmd: 'ping'});
 		};
 
+		this.getHistory = function() {
+			return $q(function(resolve, reject) {
+				this.sendMessage({cmd: 'getHistory'}).then(function(res) {
+					resolve(res.payload);
+				}, reject);
+			});
+		};
+
 		return this;
 	};
 });
