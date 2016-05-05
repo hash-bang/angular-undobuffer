@@ -66,6 +66,19 @@ var compressionWorkerInterval = 1000;
 var compressionWorkerPerCycle = 1;
 
 
+/**
+* Tracker for the next ID
+* @var {number}
+*/
+var nextId = 0;
+
+/**
+* ID prefix
+* @var {string}
+*/
+var idPrefix = 'hist-';
+
+
 self.addEventListener('message', function(e) {
 	switch (e.data.cmd) {
 		case 'start':
@@ -84,6 +97,7 @@ self.addEventListener('message', function(e) {
 			break;
 		case 'push':
 			buffer.push({
+				id: idPrefix + nextId++,
 				compressed: false,
 				contents: e.data.payload,
 			});
