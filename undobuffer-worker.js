@@ -12,7 +12,7 @@
 * Main undo buffer
 * Each buffer item is an object of the form:
 * {
-* 	compressed: Boolean|String, // Either true, false or 'compressing'
+* 	compressed: Boolean|String, // Either true, false, 'compressing' or 'fullObject'
 * 	contents: Object, // The actual object itself
 * }
 * @var {array}
@@ -57,6 +57,35 @@ var nextId = 0;
 var idPrefix = 'hist-';
 
 
+// Utility functions {{{
+function getFullObjectAt(id) {
+	var histOffset = buffer.findIndex(function(h) { return h.id == id });
+	if (histOffset < 0) throw new Error('Cannot get full history for non-existant history ID: ' + id);
+
+	var lastFullObjOffset = buffer.slice(histOffset).findIndex(function(h) {
+		return (h.compressed == 'fullObject' || h.compressed === false);
+	});
+	if (lastFullObjOffset < 0) {
+		console.log('BUFFER DUMP', buffer.map(function(b) { return {id: b.id, compressed: b.compressed } }));
+		throw new Error('Cannot reconstruct history ID: ' + id + ' as no fullObjects before it in the stack exist!');
+	}
+
+	console.log('FULL OBJ', id, '@', histOffset, 'Needs everything', lastFullObjOffset, '->', histOffset);
+	var output = buffer
+		.slice(lastFullObjOffset, histOffset - lastFullObjOffset)
+		.map(function(buffer) { return buffer.contents })
+		.reduce(function(full, patch) {
+			console.log('REDUCE FULL ->', full);
+			console.log('REDUCE PATC ->', patch);
+			return full;
+		}, buffer[lastFullObjOffset].contents);
+	console.log('DONE WITH', output);
+	console.log('---');
+	return output;
+}
+// }}}
+
+
 self.addEventListener('message', function(e) {
 	switch (e.data.cmd) {
 		case 'start':
@@ -76,10 +105,17 @@ self.addEventListener('message', function(e) {
 		case 'push':
 			buffer.push({
 				id: idPrefix + nextId++,
-				compressed: false,
+				compressed: buffer.length == 0 ? 'fullObject' : false,
 				contents: e.data.payload,
 			});
-			if (maxBufferSize && buffer.length > maxBufferSize) buffer.shift(); // Shift off start of buffer if we are limiting the buffer size
+			if (maxBufferSize && buffer.length > maxBufferSize) { // Shift off start of buffer if we are limiting the buffer size
+				if (buffer.length > 1) {
+					buffer[1].contents = getFullObjectAt(buffer[1].id);
+					buffer[1].compressed = 'fullObject';
+				}
+				buffer.shift();
+				// FIXME: Move last fullObject if needed
+			}
 			break;
 		case 'pop':
 			var contents = buffer.pop(e.data.payload);
@@ -109,16 +145,19 @@ if (compressionWorkerInterval) {
 		if (compressionWorkerPerCycle > 0) candidates = candidates.slice(0, compressionWorkerPerCycle);
 		// }}}
 
-		if (candidates && candidates.length)
-			candidates
-				.forEach(function(buffer) {
-					buffer.compressed = 'compressing';
-					console.log('COMPRESS', buffer);
-					for (var i = 0; i < 1000000000; i++) {
-						// Pass
-					}
-					buffer.compressed = true;
-				});
+		if (candidates && candidates.length) {
+			candidates.forEach(function(candidateBuffer) {
+				candidateBuffer.compressed = 'compressing';
+				var bufferIndex = buffer.findIndex(function(b) { return b.id == candidateBuffer.id });
+				if (bufferIndex < 0) throw new Error('Trying to compress non-existant buffer ID: ' + candidateBuffer.id);
+				var fullObject = getFullObjectAt(buffer[bufferIndex-1].id);
+
+				console.log('COMPRESS', candidateBuffer, 'AGAINST FULL', fullObject);
+				console.log('PATCH BECOMES', DeepDiff.diff(fullObject, candidateBuffer));
+
+				candidateBuffer.compressed = true;
+			});
+		}
 
 		compressionWorkerHandle = setTimeout(compressionWorkerFunc, compressionWorkerInterval);
 	};

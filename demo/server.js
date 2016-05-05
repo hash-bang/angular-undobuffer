@@ -27,6 +27,10 @@ app.get('/angular-undobuffer.js', function(req, res) {
 	res.sendFile('angular-undobuffer.js', {root: root});
 });
 
+app.get('/deep-diff.js', function(req, res) {
+	res.sendFile('index.js', {root: root + '/node_modules/deep-diff'});
+});
+
 app.get('/undobuffer-worker.js', function(req, res) {
 	res.sendFile('undobuffer-worker.js', {root: root});
 });
