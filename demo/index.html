@@ -49,7 +49,7 @@ var app = angular.module('app', [
 	'angular-undobuffer'
 ]);
 
-app.controller('undoBufferExampleController', function($scope, UndoBuffer) {
+app.controller('undoBufferExampleController', function($scope, $timeout, UndoBuffer) {
 	$scope.project = {};
 	$scope.history;
 
@@ -74,18 +74,21 @@ app.controller('undoBufferExampleController', function($scope, UndoBuffer) {
 	});
 
 	/**
-	* Update the history list by paging the service for the buffer contents
+	* Periodically refresh the history list by asking the service for the buffer contents
 	*/
 	$scope.updateHistory = function() {
-		$scope.undoBuffer.getHistory().then(function(res) {
-			$scope.history = res
-				.map(function(v, k) {
-					v.$index = k;
-					return v;
-				})
-				.reverse();
-		});
+		$timeout.cancel($scope.updateHistoryTimer); // Cancel existing timer if we were invoked manually
+		$scope.undoBuffer.getHistory()
+			.then(function(res) {
+				$scope.history = res.reverse();
+			})
+			.finally(function() {
+				// Schedule another update
+				$scope.updateHistoryTimer = $timeout($scope.updateHistory, 100);
+			});
 	};
+	// Schedule the initial update
+	$scope.updateHistoryTimer = $timeout($scope.updateHistory, 100);
 	// }}}
 
 	$scope.junkTerms = ['alpha', 'beta', 'gamma', 'delta', 'epsilon', 'zeta', 'eta', 'theta', 'iota', 'kappa', 'lambda', 'mu', 'nu', 'xi', 'omicron', 'pi', 'sigma', 'tau', 'upsilon', 'phi', 'chi', 'psi', 'omega'];
