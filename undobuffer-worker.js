@@ -5,28 +5,6 @@
 * It is intended to be invoked as a web worker object
 *
 * @author Matt Carter <m@ttcarter.com>
-* @example
-* 	// Boot buffer
-* 	var undoBufferWorker = new Worker('/js/undoBuffer.js');
-*	
-* 	// Listen for messages back
-* 	undoBuffer.addEventListener('message', function(e) {
-* 		switch (e.data.cmd) {
-*			case 'message':
-* 				console.log('UndoBuffer:', e.data.payload);
-* 				break;
-* 			case 'pop':
-* 				console.log('Restore undo buffer item', e.data.payload);
-* 				break;
-* 			default:
-* 				throw new Error('Unknown response from UndoBuffer: ' + e.data.cmd);
-* 		}
-* 	}, false);
-*	
-* 	// Push one item into the buffer
-* 	worker.postMessage({'cmd': 'push', 'payload': someObject});
-* 	
-* 	// Pop last item
 */
 
 
