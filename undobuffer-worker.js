@@ -125,8 +125,11 @@ self.addEventListener('message', function(e) {
 var compressionWorkerHandle;
 if (compressionWorkerInterval) {
 	var compressionWorkerFunc = function() {
-		var candidates = buffer.reverse().filter(function(buf) { return buf.compressed === false });
+		// Work out the candidate buffers to compress {{{
+		var candidates = buffer.filter(function(buf) { return buf.compressed === false });
+		candidates.reverse();
 		if (compressionWorkerPerCycle > 0) candidates = candidates.slice(0, compressionWorkerPerCycle);
+		// }}}
 
 		if (candidates && candidates.length)
 			candidates
