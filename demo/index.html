@@ -71,7 +71,7 @@ app.controller('undoBufferExampleController', function($scope, $timeout, UndoBuf
 
 		// Update the history list
 		$scope.updateHistory();
-	});
+	}, true);
 
 	/**
 	* Periodically refresh the history list by asking the service for the buffer contents

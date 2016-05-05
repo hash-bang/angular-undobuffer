@@ -31,7 +31,7 @@ app.controller('undoBufferExampleController', function($scope, UndoBuffer) {
 
 		// Push a project state
 		$scope.undoBuffer.push(oldProject);
-	});
+	}, true);
 
 
 	$scope.undo = function() {
