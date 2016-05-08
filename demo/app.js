@@ -70,11 +70,18 @@ app.controller('undoBufferExampleController', function($scope, $timeout, UndoBuf
 		});
 	};
 
+	$scope.nextSequencial = 0;
+	$scope.addSequencial = function() {
+		var thisKey = $scope.nextSequencial++;
+		$scope.project['key-' + thisKey] = 'val-' + thisKey;
+	};
+
 
 	/**
 	* Clear the project and recreate the whole thing
 	*/
 	$scope.resetProject = function() {
+		$scope.nextSequencial = 0;
 		$scope.project = {title: 'project-' + _.sample($scope.junkTerms) + _.random(100, 999)};
 		$scope.randomizeObject($scope.project, 5, 25);
 	};
