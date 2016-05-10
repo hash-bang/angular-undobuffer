@@ -57,28 +57,35 @@ var nextId = 0;
 var idPrefix = 'hist-';
 
 
+// Imports
+self.importScripts('/js/deep-diff.js');
+
+
 // Utility functions {{{
 function getFullObjectAt(id) {
-	var histOffset = buffer.findIndex(function(h) { return h.id == id });
+	var bufferReversed = buffer.slice();
+	bufferReversed.reverse();
+
+	var histOffset = bufferReversed.findIndex(function(h) { return h.id == id });
 	if (histOffset < 0) throw new Error('Cannot get full history for non-existant history ID: ' + id);
 
-	var lastFullObjOffset = buffer.slice(histOffset).findIndex(function(h) {
+	var lastFullObjOffset = bufferReversed.slice(histOffset).findIndex(function(h) {
 		return (h.compressed == 'fullObject' || h.compressed === false);
 	});
 	if (lastFullObjOffset < 0) {
-		console.log('BUFFER DUMP', buffer.map(function(b) { return {id: b.id, compressed: b.compressed } }));
+		console.log('BUFFER DUMP (reversed)', bufferReversed.slice(histOffset).map(function(b) { return b.id + ' (compressed:' + b.compressed + ')'}));
 		throw new Error('Cannot reconstruct history ID: ' + id + ' as no fullObjects before it in the stack exist!');
 	}
 
-	console.log('FULL OBJ', id, '@', histOffset, 'Needs everything', lastFullObjOffset, '->', histOffset);
-	var output = buffer
+	console.log('FULL OBJ', id, '@', histOffset, 'Needs everything', bufferReversed[lastFullObjOffset].id, '->', bufferReversed[histOffset].id);
+	var output = bufferReversed
 		.slice(lastFullObjOffset, histOffset - lastFullObjOffset)
-		.map(function(buffer) { return buffer.contents })
+		.map(function(b) { return b.contents })
 		.reduce(function(full, patch) {
 			console.log('REDUCE FULL ->', full);
 			console.log('REDUCE PATC ->', patch);
 			return full;
-		}, buffer[lastFullObjOffset].contents);
+		}, bufferReversed[lastFullObjOffset].contents);
 	console.log('DONE WITH', output);
 	console.log('---');
 	return output;
