@@ -152,10 +152,14 @@ if (compressionWorkerInterval) {
 				if (bufferIndex < 0) throw new Error('Trying to compress non-existant buffer ID: ' + candidateBuffer.id);
 				var fullObject = getFullObjectAt(buffer[bufferIndex-1].id);
 
-				console.log('COMPRESS', candidateBuffer, 'AGAINST FULL', fullObject);
-				console.log('PATCH BECOMES', DeepDiff.diff(fullObject, candidateBuffer));
+				var patch = DeepDiff.diff(fullObject, candidateBuffer.contents);
 
-				candidateBuffer.compressed = true;
+				if (patch === undefined) { // Empty buffer - slice from buffer stack
+					buffer = buffer.filter(function(b) { return b != candidateBuffer.id });
+				} else {
+					candidateBuffer.contents = DeepDiff.diff(fullObject, candidateBuffer.contents);
+					candidateBuffer.compressed = true;
+				}
 			});
 		}
 
