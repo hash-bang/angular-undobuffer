@@ -58,34 +58,44 @@ var idPrefix = 'hist-';
 
 
 // Imports
-self.importScripts('/js/deep-diff.js');
+self.importScripts('/js/deep-diff.js', '/js/lodash.js');
 
 
 // Utility functions {{{
 function getFullObjectAt(id) {
-	var bufferReversed = buffer.slice();
-	bufferReversed.reverse();
-
-	var histOffset = bufferReversed.findIndex(function(h) { return h.id == id });
+	// find histOffset {{{
+	var histOffset = buffer.findIndex(function(h) { return h.id == id });
 	if (histOffset < 0) throw new Error('Cannot get full history for non-existant history ID: ' + id);
+	// }}}
 
-	var lastFullObjOffset = bufferReversed.slice(histOffset).findIndex(function(h) {
-		return (h.compressed == 'fullObject' || h.compressed === false);
-	});
+	// find lastFullObjOffset {{{
+	console.log('WANT', id, 'histOffset', histOffset);
+
+	// Walk backwards until we hit a full or non-compressed object
+	var lastFullObjOffset = -1;
+	for (var x = histOffset; x > -1; x--) {
+		if (buffer[x].compressed == 'fullObject' || buffer[x].compressed === false) {
+			lastFullObjOffset = x;
+			break;
+		}
+	}
 	if (lastFullObjOffset < 0) {
-		console.log('BUFFER DUMP (reversed)', bufferReversed.slice(histOffset).map(function(b) { return b.id + ' (compressed:' + b.compressed + ')'}));
+		console.log('BUFFER DUMP', buffer.map(function(b) { return b.id + ' (compressed:' + b.compressed + ')'}));
 		throw new Error('Cannot reconstruct history ID: ' + id + ' as no fullObjects before it in the stack exist!');
 	}
+	// }}}
 
-	console.log('FULL OBJ', id, '@', histOffset, 'Needs everything', bufferReversed[lastFullObjOffset].id, '->', bufferReversed[histOffset].id);
-	var output = bufferReversed
-		.slice(lastFullObjOffset, histOffset - lastFullObjOffset)
-		.map(function(b) { return b.contents })
-		.reduce(function(full, patch) {
-			console.log('REDUCE FULL ->', full);
-			console.log('REDUCE PATC ->', patch);
-			return full;
-		}, bufferReversed[lastFullObjOffset].contents);
+	// Walk between lastFullObjOffset -> histOffset and patch as we go {{{
+	console.log('WALK', lastFullObjOffset, histOffset);
+	var output = buffer[lastFullObjOffset].contents;
+	console.log('BUFF', lastFullObjOffset, 'IS', buffer[lastFullObjOffset]);
+	for (var x = lastFullObjOffset + 1; x < histOffset + 1; x++) {
+		console.log('PATCH', x, buffer[x].id, buffer[x].contents, 'AGAINST FULL', output);
+		for (var i = buffer[x].contents.length - 1; i >= 0; i--) {
+			DeepDiff.applyChange(output, true, buffer[x].contents[i]);
+		}
+	}
+	// }}}
 	console.log('DONE WITH', output);
 	console.log('---');
 	return output;
