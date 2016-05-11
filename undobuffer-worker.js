@@ -172,7 +172,7 @@ if (compressionWorkerInterval) {
 				var patch = DeepDiff.diff(fullObject, candidateBuffer.contents);
 
 				if (patch === undefined) { // Empty buffer - slice from buffer stack
-					buffer = buffer.filter(function(b) { return b != candidateBuffer.id });
+					buffer = buffer.filter(function(b) { return b.id != candidateBuffer.id });
 				} else {
 					candidateBuffer.contents = DeepDiff.diff(fullObject, candidateBuffer.contents);
 					candidateBuffer.compressed = true;
