@@ -58,7 +58,7 @@ var idPrefix = 'hist-';
 
 
 // Imports
-self.importScripts('/js/deep-diff.js', '/js/lodash.js');
+self.importScripts('/js/deep-diff.js');
 
 
 // Utility functions {{{
