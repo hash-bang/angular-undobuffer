@@ -139,6 +139,10 @@ self.addEventListener('message', function(e) {
 			buffer.pop(e.data.payload);
 			self.postMessage({id: e.data.id, cmd: 'pop', payload: contents});
 			break;
+		case 'popPatch':
+			var contents = buffer.pop(e.data.payload);
+			self.postMessage({id: e.data.id, cmd: 'popPatch', payload: contents.contents});
+			break;
 		case 'getHistory':
 			self.postMessage({id: e.data.id, cmd: 'getHistory', payload: buffer});
 			break;
