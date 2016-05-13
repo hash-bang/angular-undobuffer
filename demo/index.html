@@ -48,6 +48,12 @@ td > a {
 .mar-top-md {
 	margin-top: 10px;
 }
+
+input[type="checkbox"] {
+	width: 20px;
+	height: 20px;
+	vertical-align: bottom;
+}
 </style>
 
 <body ng-app="app">
@@ -107,7 +113,12 @@ td > a {
 					</div>
 				</div>
 				<div class="panel panel-primary">
-					<div class="panel-heading">UndoBuffer history</div>
+					<div class="panel-heading">
+						UndoBuffer history
+						<label class="pull-right">
+							<input ng-model="resolveHistory" type="checkbox"> Full
+						</label>
+					</div>
 					<div class="panel-body">
 						<div ng-show="!history.length" class="text-muted">No history to show</div>
 						<table ng-show="history.length" class="table table-striped">

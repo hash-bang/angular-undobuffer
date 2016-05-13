@@ -80,11 +80,12 @@ angular.module('angular-undobuffer', [])
 
 		/**
 		* Convenience function to request all buffer history
+		* @param {boolean} [getFull=false] Return the FULL history rather than patches (which is probably whats being stored in memory)
 		* @return {Promise}
 		*/
-		this.getHistory = function() {
+		this.getHistory = function(getFull) {
 			return $q(function(resolve, reject) {
-				this.sendMessage({cmd: 'getHistory'}).then(function(res) {
+				this.sendMessage({cmd: 'getHistory', resolve: (getFull || false)}).then(function(res) {
 					resolve(res.payload);
 				}, reject);
 			});

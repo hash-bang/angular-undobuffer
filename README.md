@@ -72,9 +72,10 @@ UndoBuffer.pop([id])
 'Rewind' to either that last known state, or if String is specified to that history items ID.
 
 
-UndoBuffer.getHistory()
+UndoBuffer.getHistory([resolve=false])
 -----------------------
 Return the raw array content of the internal UndoBuffer instance.
+If `resolve` is truthy each history element is returned as a full object, not as the internally stored patch. This is exceptionally CPU costly on each call and is only intended for debugging purposes.
 
 
 UndoBuffer.setMaxBufferSize(size)

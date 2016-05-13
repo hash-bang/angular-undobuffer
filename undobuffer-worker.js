@@ -12,6 +12,7 @@
 * Main undo buffer
 * Each buffer item is an object of the form:
 * {
+	id: String, // Unique ID for this history element
 * 	compressed: Boolean|String, // Either true, false, 'compressing' or 'fullObject'
 * 	contents: Object, // The actual object itself
 * }
@@ -140,7 +141,21 @@ self.addEventListener('message', function(e) {
 			self.postMessage({id: e.data.id, cmd: 'pop', payload: contents});
 			break;
 		case 'getHistory':
-			self.postMessage({id: e.data.id, cmd: 'getHistory', payload: buffer});
+			if (e.data.resolve) {
+				self.postMessage({
+					id: e.data.id,
+					cmd: 'getHistory',
+					payload: buffer.map(function(b) {
+						return {
+							id: b.id,
+							compressed: b.compressed,
+							contents: getFullObjectAt(b.id), // Resolve the full history object
+						};
+					}),
+				});
+			} else { // Return patch based history
+				self.postMessage({id: e.data.id, cmd: 'getHistory', payload: buffer});
+			}
 			break;
 		case 'setMaxBufferSize':
 			maxBufferSize = e.data.payload;

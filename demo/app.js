@@ -26,12 +26,15 @@ app.controller('undoBufferExampleController', function($scope, $timeout, UndoBuf
 		$scope.updateHistory();
 	}, true);
 
+	$scope.resolveHistory = false; // false=get history as patches, true=get history as full objects
+	$scope.$watch('resolveHistory', $scope.updateHistory); // Update on toggle
+
 	/**
 	* Periodically refresh the history list by asking the service for the buffer contents
 	*/
 	$scope.updateHistory = function() {
 		$timeout.cancel($scope.updateHistoryTimer); // Cancel existing timer if we were invoked manually
-		$scope.undoBuffer.getHistory()
+		$scope.undoBuffer.getHistory($scope.resolveHistory)
 			.then(function(res) {
 				$scope.history = res.reverse();
 			})
