@@ -58,6 +58,13 @@ var nextId = 0;
 var idPrefix = 'hist-';
 
 
+/**
+* Debugging level
+* @var {number}
+*/
+var debug = 0;
+
+
 // Imports
 self.importScripts('/js/deep-diff.js');
 
@@ -101,10 +108,23 @@ function getFullObjectAt(id) {
 	console.log('---');
 	return output;
 }
+
+/**
+* Output a debug message based on the desired debugging level
+* @param {number} The level at which this message should be output
+* @param {msg,...} The components of the message
+*/
+function debugLog(level, msg) {
+	var args = Array.prototype.slice.call(arguments, 0);
+	args[0] = 'Angular-UndoBuffer #' + level; // Replace the level argument with a prefix instead
+	if (debug < level) return; // Don't bother at this level
+	console.log.apply(console, args);
+}
 // }}}
 
 
 self.addEventListener('message', function(e) {
+	debugLog(3, 'Recieved message', e.data.cmd);
 	switch (e.data.cmd) {
 		case 'start':
 			self.postMessage({id: e.data.id, cmd: 'message', payload: 'UndoBuffer started'});
@@ -118,9 +138,11 @@ self.addEventListener('message', function(e) {
 			break;
 		case 'clear':
 			buffer = [];
+			debugLog(1, 'undo buffer cleared');
 			self.postMessage({id: e.data.id, cmd: 'clear'});
 			break;
 		case 'push':
+			debugLog(1, 'Added item to undo buffer');
 			buffer.push({
 				id: idPrefix + nextId++,
 				compressed: buffer.length == 0 ? 'fullObject' : false,
@@ -136,6 +158,7 @@ self.addEventListener('message', function(e) {
 			}
 			break;
 		case 'pop':
+			debugLog(1, 'popping undo buffer');
 			var contents = getFullObjectAt(buffer[buffer.length-1].id);
 			buffer.pop(e.data.payload);
 			self.postMessage({id: e.data.id, cmd: 'pop', payload: contents});
@@ -161,6 +184,12 @@ self.addEventListener('message', function(e) {
 			maxBufferSize = e.data.payload;
 			if (buffer.length > maxBufferSize) buffer = buffer.slice(buffer.length - maxBufferSize);
 			self.postMessage({id: e.data.id, cmd: 'setMaxBufferSize', payload: maxBufferSize});
+			debugLog(1, 'Maximum buffer size set to', maxBufferSize);
+			break;
+		case 'setDebug':
+			debug = e.data.payload;
+			self.postMessage({id: e.data.id, cmd: 'setDebug', payload: debug});
+			debugLog(1, 'Setting debug level to', debug);
 			break;
 		default:
 			self.postMessage({id: e.data.id, cmd: 'error', payload: 'Unknown UndoBuffer command: ' + e.data.cmd});
@@ -179,6 +208,7 @@ if (compressionWorkerInterval) {
 
 		if (candidates && candidates.length) {
 			candidates.forEach(function(candidateBuffer) {
+				debugLog(1, 'Compressing', candidateBuffer.id);
 				candidateBuffer.compressed = 'compressing';
 				var bufferIndex = buffer.findIndex(function(b) { return b.id == candidateBuffer.id });
 				if (bufferIndex < 0) throw new Error('Trying to compress non-existant buffer ID: ' + candidateBuffer.id);
@@ -187,11 +217,13 @@ if (compressionWorkerInterval) {
 				var patch = DeepDiff.diff(fullObject, candidateBuffer.contents);
 
 				if (patch === undefined) { // Empty buffer - slice from buffer stack
+					debugLog(1, 'Removing duplicate buffer', candidateBuffer.id);
 					buffer = buffer.filter(function(b) { return b.id != candidateBuffer.id });
 				} else {
 					candidateBuffer.contents = DeepDiff.diff(fullObject, candidateBuffer.contents);
 					candidateBuffer.compressed = true;
 				}
+				debugLog(1, 'Finished compressing', candidateBuffer.id);
 			});
 		}
 

@@ -102,6 +102,16 @@ angular.module('angular-undobuffer', [])
 		};
 
 
+		/**
+		* Set the debugging level
+		* @param {number} debug The new debugging level
+		* @return {Promise}
+		*/
+		this.setDebug = function(debug) {
+			return this.sendMessage({cmd: 'setDebug', payload: debug});
+		};
+
+
 		return this;
 	};
 });

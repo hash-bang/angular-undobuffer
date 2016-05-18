@@ -130,6 +130,11 @@ app.controller('undoBufferExampleController', function($scope, $timeout, UndoBuf
 		});
 	});
 
+	$scope.debug = 1;
+	$scope.$watch('debug', function() {
+		$scope.undoBuffer.setDebug($scope.debug);
+	});
+
 
 	// Initalize main object
 	$scope.resetProject();
