@@ -71,6 +71,21 @@ angular.module('angular-undobuffer', [])
 
 
 		/**
+		* Convenience function to pop a object off the undoBuffer stack and return it
+		* Unlike pop() this function returns the raw patch object and not the resolved object
+		* @return {Promise}
+		*/
+		this.popPatch = function() {
+			var self = this;
+			return $q(function(resolve, reject) {
+				self.sendMessage({cmd: 'popPatch'}).then(function(res) {
+					resolve(res.payload);
+				}, reject);
+			});
+		};
+
+
+		/**
 		* Convenience function to ping the UndoBuffer worker
 		* @return {Promise}
 		*/
