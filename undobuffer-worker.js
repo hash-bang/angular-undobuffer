@@ -12,7 +12,8 @@
 * Main undo buffer
 * Each buffer item is an object of the form:
 * {
-* 	compressed: Boolean|String, // Either true, false or 'compressing'
+	id: String, // Unique ID for this history element
+* 	compressed: Boolean|String, // Either true, false, 'compressing' or 'fullObject'
 * 	contents: Object, // The actual object itself
 * }
 * @var {array}
@@ -57,7 +58,73 @@ var nextId = 0;
 var idPrefix = 'hist-';
 
 
+/**
+* Debugging level
+* @var {number}
+*/
+var debug = 0;
+
+
+// Imports
+self.importScripts('/js/deep-diff.js');
+
+
+// Utility functions {{{
+function getFullObjectAt(id) {
+	// find histOffset {{{
+	var histOffset = buffer.findIndex(function(h) { return h.id == id });
+	if (histOffset < 0) throw new Error('Cannot get full history for non-existant history ID: ' + id);
+	// }}}
+
+	// find lastFullObjOffset {{{
+	console.log('WANT', id, 'histOffset', histOffset);
+
+	// Walk backwards until we hit a full or non-compressed object
+	var lastFullObjOffset = -1;
+	for (var x = histOffset; x > -1; x--) {
+		if (buffer[x].compressed == 'fullObject' || buffer[x].compressed === false) {
+			lastFullObjOffset = x;
+			break;
+		}
+	}
+	if (lastFullObjOffset < 0) {
+		console.log('BUFFER DUMP', buffer.map(function(b) { return b.id + ' (compressed:' + b.compressed + ')'}));
+		throw new Error('Cannot reconstruct history ID: ' + id + ' as no fullObjects before it in the stack exist!');
+	}
+	// }}}
+
+	// Walk between lastFullObjOffset -> histOffset and patch as we go {{{
+	console.log('WALK', lastFullObjOffset, histOffset);
+	var output = buffer[lastFullObjOffset].contents;
+	console.log('BUFF', lastFullObjOffset, 'IS', buffer[lastFullObjOffset]);
+	for (var x = lastFullObjOffset + 1; x < histOffset + 1; x++) {
+		console.log('PATCH', x, buffer[x].id, buffer[x].contents, 'AGAINST FULL', output);
+		for (var i = buffer[x].contents.length - 1; i >= 0; i--) {
+			DeepDiff.applyChange(output, true, buffer[x].contents[i]);
+		}
+	}
+	// }}}
+	console.log('DONE WITH', output);
+	console.log('---');
+	return output;
+}
+
+/**
+* Output a debug message based on the desired debugging level
+* @param {number} The level at which this message should be output
+* @param {msg,...} The components of the message
+*/
+function debugLog(level, msg) {
+	var args = Array.prototype.slice.call(arguments, 0);
+	args[0] = 'Angular-UndoBuffer #' + level; // Replace the level argument with a prefix instead
+	if (debug < level) return; // Don't bother at this level
+	console.log.apply(console, args);
+}
+// }}}
+
+
 self.addEventListener('message', function(e) {
+	debugLog(3, 'Recieved message', e.data.cmd);
 	switch (e.data.cmd) {
 		case 'start':
 			self.postMessage({id: e.data.id, cmd: 'message', payload: 'UndoBuffer started'});
@@ -71,28 +138,58 @@ self.addEventListener('message', function(e) {
 			break;
 		case 'clear':
 			buffer = [];
+			debugLog(1, 'undo buffer cleared');
 			self.postMessage({id: e.data.id, cmd: 'clear'});
 			break;
 		case 'push':
+			debugLog(1, 'Added item to undo buffer');
 			buffer.push({
 				id: idPrefix + nextId++,
-				compressed: false,
+				compressed: buffer.length == 0 ? 'fullObject' : false,
 				contents: e.data.payload,
 			});
-			if (maxBufferSize && buffer.length > maxBufferSize) buffer.shift(); // Shift off start of buffer if we are limiting the buffer size
+			if (maxBufferSize && buffer.length > maxBufferSize) { // Shift off start of buffer if we are limiting the buffer size
+				if (buffer.length > 1) {
+					buffer[1].contents = getFullObjectAt(buffer[1].id);
+					buffer[1].compressed = 'fullObject';
+				}
+				buffer.shift();
+				// FIXME: Move last fullObject if needed
+			}
 			break;
 		case 'pop':
-			var contents = buffer.pop(e.data.payload);
-			if (contents) contents = contents.contents;
+			debugLog(1, 'popping undo buffer');
+			var contents = getFullObjectAt(buffer[buffer.length-1].id);
+			buffer.pop(e.data.payload);
 			self.postMessage({id: e.data.id, cmd: 'pop', payload: contents});
 			break;
 		case 'getHistory':
-			self.postMessage({id: e.data.id, cmd: 'getHistory', payload: buffer});
+			if (e.data.resolve) {
+				self.postMessage({
+					id: e.data.id,
+					cmd: 'getHistory',
+					payload: buffer.map(function(b) {
+						return {
+							id: b.id,
+							compressed: b.compressed,
+							contents: getFullObjectAt(b.id), // Resolve the full history object
+						};
+					}),
+				});
+			} else { // Return patch based history
+				self.postMessage({id: e.data.id, cmd: 'getHistory', payload: buffer});
+			}
 			break;
 		case 'setMaxBufferSize':
 			maxBufferSize = e.data.payload;
 			if (buffer.length > maxBufferSize) buffer = buffer.slice(buffer.length - maxBufferSize);
 			self.postMessage({id: e.data.id, cmd: 'setMaxBufferSize', payload: maxBufferSize});
+			debugLog(1, 'Maximum buffer size set to', maxBufferSize);
+			break;
+		case 'setDebug':
+			debug = e.data.payload;
+			self.postMessage({id: e.data.id, cmd: 'setDebug', payload: debug});
+			debugLog(1, 'Setting debug level to', debug);
 			break;
 		default:
 			self.postMessage({id: e.data.id, cmd: 'error', payload: 'Unknown UndoBuffer command: ' + e.data.cmd});
@@ -109,16 +206,26 @@ if (compressionWorkerInterval) {
 		if (compressionWorkerPerCycle > 0) candidates = candidates.slice(0, compressionWorkerPerCycle);
 		// }}}
 
-		if (candidates && candidates.length)
-			candidates
-				.forEach(function(buffer) {
-					buffer.compressed = 'compressing';
-					console.log('COMPRESS', buffer);
-					for (var i = 0; i < 1000000000; i++) {
-						// Pass
-					}
-					buffer.compressed = true;
-				});
+		if (candidates && candidates.length) {
+			candidates.forEach(function(candidateBuffer) {
+				debugLog(1, 'Compressing', candidateBuffer.id);
+				candidateBuffer.compressed = 'compressing';
+				var bufferIndex = buffer.findIndex(function(b) { return b.id == candidateBuffer.id });
+				if (bufferIndex < 0) throw new Error('Trying to compress non-existant buffer ID: ' + candidateBuffer.id);
+				var fullObject = getFullObjectAt(buffer[bufferIndex-1].id);
+
+				var patch = DeepDiff.diff(fullObject, candidateBuffer.contents);
+
+				if (patch === undefined) { // Empty buffer - slice from buffer stack
+					debugLog(1, 'Removing duplicate buffer', candidateBuffer.id);
+					buffer = buffer.filter(function(b) { return b.id != candidateBuffer.id });
+				} else {
+					candidateBuffer.contents = DeepDiff.diff(fullObject, candidateBuffer.contents);
+					candidateBuffer.compressed = true;
+				}
+				debugLog(1, 'Finished compressing', candidateBuffer.id);
+			});
+		}
 
 		compressionWorkerHandle = setTimeout(compressionWorkerFunc, compressionWorkerInterval);
 	};

@@ -8,7 +8,7 @@ angular.module('angular-undobuffer', [])
 		var messageId = 1;
 
 		// Boot the worker and setup messaging {{{
-		var worker = new Worker('undobuffer-worker.js');
+		var worker = new Worker('/js/undobuffer-worker.js');
 		worker.addEventListener('message', function(e) {
 			if (e.data.id && messages[e.data.id]) { // Dispatch callback for this message
 				messages[e.data.id](null, e.data);
@@ -61,8 +61,9 @@ angular.module('angular-undobuffer', [])
 		* @return {Promise}
 		*/
 		this.pop = function() {
+			var self = this;
 			return $q(function(resolve, reject) {
-				this.sendMessage({cmd: 'pop'}).then(function(res) {
+				self.sendMessage({cmd: 'pop'}).then(function(res) {
 					resolve(res.payload);
 				}, reject);
 			});
@@ -80,11 +81,13 @@ angular.module('angular-undobuffer', [])
 
 		/**
 		* Convenience function to request all buffer history
+		* @param {boolean} [getFull=false] Return the FULL history rather than patches (which is probably whats being stored in memory)
 		* @return {Promise}
 		*/
-		this.getHistory = function() {
+		this.getHistory = function(getFull) {
+			var self = this;
 			return $q(function(resolve, reject) {
-				this.sendMessage({cmd: 'getHistory'}).then(function(res) {
+				self.sendMessage({cmd: 'getHistory', resolve: (getFull || false)}).then(function(res) {
 					resolve(res.payload);
 				}, reject);
 			});
@@ -98,6 +101,16 @@ angular.module('angular-undobuffer', [])
 		*/
 		this.setMaxBufferSize = function(maxBufferSize) {
 			return this.sendMessage({cmd: 'setMaxBufferSize', payload: maxBufferSize});
+		};
+
+
+		/**
+		* Set the debugging level
+		* @param {number} debug The new debugging level
+		* @return {Promise}
+		*/
+		this.setDebug = function(debug) {
+			return this.sendMessage({cmd: 'setDebug', payload: debug});
 		};
 
 

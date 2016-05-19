@@ -23,11 +23,19 @@ app.get('/', function(req, res) {
 	res.sendFile('index.html', {root: __dirname});
 });
 
-app.get('/angular-undobuffer.js', function(req, res) {
+app.get('/js/app.js', function(req, res) {
+	res.sendFile('app.js', {root: root + '/demo'});
+});
+
+app.get('/js/angular-undobuffer.js', function(req, res) {
 	res.sendFile('angular-undobuffer.js', {root: root});
 });
 
-app.get('/undobuffer-worker.js', function(req, res) {
+app.get('/js/deep-diff.js', function(req, res) {
+	res.sendFile('index.js', {root: root + '/node_modules/deep-diff'});
+});
+
+app.get('/js/undobuffer-worker.js', function(req, res) {
 	res.sendFile('undobuffer-worker.js', {root: root});
 });
 

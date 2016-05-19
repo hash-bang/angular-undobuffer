@@ -16,6 +16,7 @@ Installation
 1. Add `angular-undobuffer` as a module in your main `angular.module()` call.
 2. Include the service somewhere in your project by either loading the `angular-undobuffer.js` file or rolling into your minifier / webpack / concat process of choice.
 3. Provide access to the `undobuffer-worker.js` via `/js/undobuffer-worker.js` so it can load as a Web Worker.
+4. The worker requires [deep-diff](https://www.npmjs.com/package/deep-diff) exposes as `/js/deep-diff.js` so it must, likewise, be provided to the front-end browser.
 
 
 Example within a project
@@ -71,9 +72,10 @@ UndoBuffer.pop([id])
 'Rewind' to either that last known state, or if String is specified to that history items ID.
 
 
-UndoBuffer.getHistory()
+UndoBuffer.getHistory([resolve=false])
 -----------------------
 Return the raw array content of the internal UndoBuffer instance.
+If `resolve` is truthy each history element is returned as a full object, not as the internally stored patch. This is exceptionally CPU costly on each call and is only intended for debugging purposes.
 
 
 UndoBuffer.setMaxBufferSize(size)
