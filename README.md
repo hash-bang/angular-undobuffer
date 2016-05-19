@@ -70,6 +70,31 @@ Add a new state to the UndoBuffer contents.
 UndoBuffer.pop([id])
 -----------------------
 'Rewind' to either that last known state, or if String is specified to that history items ID.
+This function will return (in as the result of the promise) the full object.
+
+
+UndoBuffer.popPatch([id])
+-----------------------
+Similar to `pop()` but returns the patch object, not the full object.
+This is faster to apply in your own project than replacing the entire object as with `pop()` but does require you to have [deep-diff](https://www.npmjs.com/package/deep-diff) locally available on the frtont-end.
+
+**Example usage**
+```javascript
+$scope.project = /* Something complicated */
+
+$scope.undo = function() {
+	UndoBuffer.popPatch()
+		.then(function(res) {
+			res.reverse().forEach(function(patch) { // Note that we need to reverse the array or some patches will screw up later ones
+				DeepDiff.applyChange($scope.project, true, patch);
+			});
+		})
+		.catch(function(e) {
+			console.log('Something went wrong during undo:', e);
+		});
+};
+```
+
 
 
 UndoBuffer.getHistory([resolve=false])
