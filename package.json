@@ -1,6 +1,6 @@
 {
   "name": "angular-undobuffer",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Web worker powered Undo Buffer for exceptionally large and complex objects",
   "main": "angular-undobuffer.js",
   "dependencies": {
