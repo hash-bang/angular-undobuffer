@@ -61,8 +61,9 @@ angular.module('angular-undobuffer', [])
 		* @return {Promise}
 		*/
 		this.pop = function() {
+			var self = this;
 			return $q(function(resolve, reject) {
-				this.sendMessage({cmd: 'pop'}).then(function(res) {
+				self.sendMessage({cmd: 'pop'}).then(function(res) {
 					resolve(res.payload);
 				}, reject);
 			});
@@ -84,8 +85,9 @@ angular.module('angular-undobuffer', [])
 		* @return {Promise}
 		*/
 		this.getHistory = function(getFull) {
+			var self = this;
 			return $q(function(resolve, reject) {
-				this.sendMessage({cmd: 'getHistory', resolve: (getFull || false)}).then(function(res) {
+				self.sendMessage({cmd: 'getHistory', resolve: (getFull || false)}).then(function(res) {
 					resolve(res.payload);
 				}, reject);
 			});
