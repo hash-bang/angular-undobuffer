@@ -70,7 +70,13 @@ self.importScripts('/js/deep-diff.js');
 
 
 // Utility functions {{{
-function getFullObjectAt(id) {
+/**
+* Retrieve a full history object by its ID
+* @param {string} The ID of the history item to retrieve
+* @param {boolean} [clone=false] Whether to return a cloned version of the full object if one already exists
+* @return {Object} The complex, fully resolved object
+*/
+function getFullObjectAt(id, clone) {
 	// find histOffset {{{
 	var histOffset = buffer.findIndex(function(h) { return h.id == id });
 	if (histOffset < 0) throw new Error('Cannot get full history for non-existant history ID: ' + id);
@@ -95,7 +101,7 @@ function getFullObjectAt(id) {
 
 	// Walk between lastFullObjOffset -> histOffset and patch as we go {{{
 	console.log('WALK', lastFullObjOffset, histOffset);
-	var output = buffer[lastFullObjOffset].contents;
+	var output = JSON.parse(JSON.stringify(buffer[lastFullObjOffset].contents));
 	console.log('BUFF', lastFullObjOffset, 'IS', buffer[lastFullObjOffset]);
 	for (var x = lastFullObjOffset + 1; x < histOffset + 1; x++) {
 		console.log('PATCH', x, buffer[x].id, buffer[x].contents, 'AGAINST FULL', output);
@@ -149,12 +155,11 @@ self.addEventListener('message', function(e) {
 				contents: e.data.payload,
 			});
 			if (maxBufferSize && buffer.length > maxBufferSize) { // Shift off start of buffer if we are limiting the buffer size
-				if (buffer.length > 1) {
-					buffer[1].contents = getFullObjectAt(buffer[1].id);
+				if (buffer.length > 1 && buffer[1].compressed === true) {
+					buffer[1].contents = getFullObjectAt(buffer[1].id, true);
 					buffer[1].compressed = 'fullObject';
 				}
 				buffer.shift();
-				// FIXME: Move last fullObject if needed
 			}
 			break;
 		case 'pop':
