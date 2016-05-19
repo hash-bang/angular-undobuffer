@@ -95,9 +95,24 @@ app.controller('undoBufferExampleController', function($scope, $timeout, UndoBuf
 	*/
 	$scope.undo = function() {
 		$scope.undoBuffer.pop().then(function(payload) {
+			if (!payload) return;
 			$scope.skipNextProjectWatch = true;
 			$scope.project = payload;
-			// Update the history list
+			$scope.updateHistory();
+		});
+	};
+
+
+	/**
+	* Trigger the undo - this time requesting a patch object rather than the whole thing
+	*/
+	$scope.undoPatch = function() {
+		$scope.undoBuffer.popPatch().then(function(payload) {
+			if (!payload) return;
+			$scope.skipNextProjectWatch = true;
+			payload.reverse().forEach(function(patch) {
+				DeepDiff.applyChange($scope.project, true, patch);
+			});
 			$scope.updateHistory();
 		});
 	};

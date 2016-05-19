@@ -31,6 +31,7 @@
 
 	<!-- Angular-UndoBuffer -->
 	<script src="/js/angular-undobuffer.js"></script>
+	<script src="/js/deep-diff.js"></script>
 </head>
 <style>
 a {
@@ -94,6 +95,9 @@ input[type="checkbox"] {
 					<div class="panel-body">
 						<div class="btn-group">
 							<a ng-click="undo()" class="btn btn-warning"><i class="fa fa-arrow-left"></i> UNDO!</a>
+						</div>
+						<div class="btn-group">
+							<a ng-click="undoPatch()" class="btn btn-warning"><i class="fa fa-indent"></i> UNDO (as patch)</a>
 						</div>
 						<div class="btn-group">
 							<a ng-click="ping()" class="btn btn-info"><i class="fa fa-heartbeat"></i> Ping</a>
