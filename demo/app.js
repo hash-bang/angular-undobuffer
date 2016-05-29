@@ -110,9 +110,16 @@ app.controller('undoBufferExampleController', function($scope, $timeout, UndoBuf
 		$scope.undoBuffer.popPatch().then(function(payload) {
 			if (!payload) return;
 			$scope.skipNextProjectWatch = true;
-			payload.reverse().forEach(function(patch) {
-				DeepDiff.applyChange($scope.project, true, patch);
-			});
+
+			// Perform patch if we're being passed an array
+			if (Array.isArray(payload)) {
+				payload.reverse().forEach(function(patch) {
+					DeepDiff.applyChange($scope.project, true, patch);
+				});
+			} else { // Being passed a full object
+				$scope.project = payload;
+			}
+
 			$scope.updateHistory();
 		});
 	};
