@@ -75,8 +75,9 @@ This function will return (in as the result of the promise) the full object.
 
 UndoBuffer.popPatch([id])
 -----------------------
-Similar to `pop()` but returns the patch object, not the full object.
-This is faster to apply in your own project than replacing the entire object as with `pop()` but does require you to have [deep-diff](https://www.npmjs.com/package/deep-diff) locally available on the frtont-end.
+Similar to `pop()` but tries to return the most recent patch object rather than the full object.
+
+This is faster to apply in your own project than replacing the entire object as with `pop()` but does require you to have [deep-diff](https://www.npmjs.com/package/deep-diff) locally available on the front-end.
 
 **Example usage**
 ```javascript
@@ -94,6 +95,8 @@ $scope.undo = function() {
 		});
 };
 ```
+
+**NOTE**: `popPatch()` will *try* to return the patch object but if that object has not yet been compressed will instead return the full object similar to `pop()`. This means you have to do a type check on the return value. If the value is an array - its a patch and calling `DeepDiff.applyChange()` on each element in reverse is fine, if its an object you should simply replace the object as with the return of `pop()`.
 
 
 
