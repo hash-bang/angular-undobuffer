@@ -83,8 +83,6 @@ function getFullObjectAt(id, clone) {
 	// }}}
 
 	// find lastFullObjOffset {{{
-	console.log('WANT', id, 'histOffset', histOffset);
-
 	// Walk backwards until we hit a full or non-compressed object
 	var lastFullObjOffset = -1;
 	for (var x = histOffset; x > -1; x--) {
@@ -100,9 +98,7 @@ function getFullObjectAt(id, clone) {
 	// }}}
 
 	// Walk between lastFullObjOffset -> histOffset and patch as we go {{{
-	console.log('WALK', lastFullObjOffset, histOffset);
 	var output = JSON.parse(JSON.stringify(buffer[lastFullObjOffset].contents));
-	console.log('BUFF', lastFullObjOffset, 'IS', buffer[lastFullObjOffset]);
 	for (var x = lastFullObjOffset + 1; x < histOffset + 1; x++) {
 		console.log('PATCH', x, buffer[x].id, buffer[x].contents, 'AGAINST FULL', output);
 		for (var i = buffer[x].contents.length - 1; i >= 0; i--) {
@@ -110,8 +106,6 @@ function getFullObjectAt(id, clone) {
 		}
 	}
 	// }}}
-	console.log('DONE WITH', output);
-	console.log('---');
 	return output;
 }
 
