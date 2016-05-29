@@ -227,7 +227,7 @@ if (compressionWorkerInterval) {
 					debugLog(1, 'Removing duplicate buffer', candidateBuffer.id);
 					buffer = buffer.filter(function(b) { return b.id != candidateBuffer.id });
 				} else {
-					candidateBuffer.contents = DeepDiff.diff(fullObject, candidateBuffer.contents);
+					candidateBuffer.contents = patch;
 					candidateBuffer.compressed = true;
 				}
 				debugLog(1, 'Finished compressing', candidateBuffer.id);
