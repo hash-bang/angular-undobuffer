@@ -158,6 +158,7 @@ self.addEventListener('message', function(e) {
 			break;
 		case 'pop':
 			debugLog(1, 'popping undo buffer (as full object)');
+			if (!buffer.length) return self.postMessage({id: e.data.id, cmd: 'cmd', payload: undefined});
 			var contents = getFullObjectAt(buffer[buffer.length-1].id);
 			buffer.pop(e.data.payload);
 			self.postMessage({id: e.data.id, cmd: 'pop', payload: contents});
