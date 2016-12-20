@@ -166,7 +166,7 @@ self.addEventListener('message', function(e) {
 		case 'popPatch':
 			debugLog(1, 'popping undo buffer (as patch)');
 			var contents = buffer.pop(e.data.payload);
-			self.postMessage({id: e.data.id, cmd: 'popPatch', payload: contents.contents});
+			self.postMessage({id: e.data.id, cmd: 'popPatch', payload: contents ? contents.contents : undefined});
 			break;
 		case 'getHistory':
 			if (e.data.resolve) {
