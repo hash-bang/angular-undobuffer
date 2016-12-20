@@ -16,7 +16,7 @@
 
 var root = __dirname + '/..';
 var express = require('express');
-global.app = express();
+var app = express();
 app.use('/node_modules', express.static(root + '/node_modules'));
 
 app.get('/', function(req, res) {
