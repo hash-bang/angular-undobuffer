@@ -8,7 +8,7 @@ angular.module('angular-undobuffer', [])
 		var messageId = 1;
 
 		// Boot the worker and setup messaging {{{
-		var worker = new Worker('/js/undobuffer-worker.js');
+		var worker = new Worker('//js/undobuffer-worker.js');
 		worker.addEventListener('message', function(e) {
 			if (e.data.id && messages[e.data.id]) { // Dispatch callback for this message
 				messages[e.data.id](null, e.data);
